@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
 			A = (instruction << 23) >> 29;
 			B = (instruction << 26) >> 29;
 			C = (instruction << 29) >> 29;
-			sA = (instruction >> 25) & 0B111;
+			sA = (instruction >> 25) & 0x7;
 			value = (instruction << 7) >> 7;
 
 			printf("\n%08x %s R%d (%08x), R%d (%08x), R%d (%08x) %08x %80x\n", instruction, mnemo[opcode], A, Reg[A], B, Reg[B], C, Reg[C], sA, value);
@@ -148,9 +148,9 @@ int main(int argc, char *argv[]) {
 
 			// CMOV (Conditional MOV)
 		case 0:
-			A = (instruction >> 6) & 0B111;
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			A = (instruction >> 6) & 0x7;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			if (Reg[C] != 0) {
 				Reg[A] = Reg[B];
@@ -162,9 +162,9 @@ int main(int argc, char *argv[]) {
 			// AIND  (Index Array)
 		case 1:
 
-			A = (instruction >> 6) & 0B111;
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			A = (instruction >> 6) & 0x7;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			if (arrays[Reg[B]] != NULL) {
 				if (Reg[C] < sizes[Reg[B]]) {
@@ -178,9 +178,9 @@ int main(int argc, char *argv[]) {
 			// AAM  (Amend Array)
 		case 2:
 
-			A = (instruction >> 6) & 0B111;
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			A = (instruction >> 6) & 0x7;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			if (arrays[Reg[A]] != NULL) {
 				if (Reg[B] < sizes[Reg[A]]) {
@@ -194,9 +194,9 @@ int main(int argc, char *argv[]) {
 			// ADD
 		case 3:
 
-			A = (instruction >> 6) & 0B111;
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			A = (instruction >> 6) & 0x7;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			Reg[A] = Reg[B] + Reg[C];
 
@@ -206,9 +206,9 @@ int main(int argc, char *argv[]) {
 			// MUL
 		case 4:
 
-			A = (instruction >> 6) & 0B111;
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			A = (instruction >> 6) & 0x7;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			Reg[A] = Reg[B] * Reg[C];
 
@@ -218,9 +218,9 @@ int main(int argc, char *argv[]) {
 			// DIV
 		case 5:
 
-			A = (instruction >> 6) & 0B111;
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			A = (instruction >> 6) & 0x7;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			if (Reg[C] == 0) {
 				printf("\nMachine Fail: Division by 0\n");
@@ -235,9 +235,9 @@ int main(int argc, char *argv[]) {
 			// NAND
 		case 6:
 
-			A = (instruction >> 6) & 0B111;
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			A = (instruction >> 6) & 0x7;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			Reg[A] = (~Reg[B]) | (~Reg[C]);
 
@@ -253,8 +253,8 @@ int main(int argc, char *argv[]) {
 			// ALLOC
 		case 8:
 
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			if (Reg[C] != 0) {
 
@@ -284,8 +284,7 @@ int main(int argc, char *argv[]) {
 			// FREE (Abandon array)
 		case 9:
 
-			C = instruction & 0B111;
-
+			C = instruction & 0x7;
 
 			if (Reg[C] != 0) {
 				if (Reg[C] < collecSize) {
@@ -304,7 +303,7 @@ int main(int argc, char *argv[]) {
 			// OUT 
 		case 10:
 
-			C = instruction & 0B111;
+			C = instruction & 0x7;
 
 			putchar(Reg[C]);
 
@@ -314,24 +313,19 @@ int main(int argc, char *argv[]) {
 			// IN
 		case 11:
 
-			C = instruction & 0B111;
+			C = instruction & 0x7;
 
 			input = getchar();
-
-			if (input == 13) {
-				Reg[C] = 0xFFFFFFFF;
-			} else {
-				Reg[C] = (uint32_t)input;
-			}
-
+			Reg[C] = (uint32_t)input;
+			
 			PC++;
 			break;
 
 			// LOAD / JMP
 		case 12:
 
-			B = (instruction >> 3) & 0B111;
-			C = instruction & 0B111;
+			B = (instruction >> 3) & 0x7;
+			C = instruction & 0x7;
 
 			if (Reg[B] != 0) {
 				if (arrays[Reg[B]] != NULL) {
@@ -352,7 +346,7 @@ int main(int argc, char *argv[]) {
 			// ORT
 		case 13:
 
-			sA = (instruction >> 25) & 0B111;
+			sA = (instruction >> 25) & 0x7;
 			value = (instruction << 7) >> 7;
 
 			Reg[sA] = value;
