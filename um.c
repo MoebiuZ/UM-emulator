@@ -7,7 +7,6 @@
 
 #define DEBUG 0
 
-
 #define ARRAY_BLOCK 128
 
 uint32_t **arrays;
@@ -28,6 +27,7 @@ struct sStack {
 	uint32_t size;
 	uint32_t *stack;
 };
+
 
 typedef struct sStack STACK;
 STACK freedStack;
@@ -54,7 +54,6 @@ void *loadROM(uint32_t **arrays, const char *file, size_t size) {
 	sizes[0] = size + 1;
 	f = fopen(file, "r");
 	fread(arrays[0], sizeof(*arrays), size, f);
-
 	fclose(f);
 
 	return;
@@ -68,7 +67,6 @@ void fixEndianess(uint32_t **array) {
 	if (*(short *)swaptest == 1) {
 		int i;
 		for (i = 0; i < sizes[0]; i++) {
-
 			arrays[0][i] = ((array[0][i] >> 24) & 0xFF) |
 				((array[0][i] << 8) & 0xFF0000) |
 				((array[0][i] >> 8) & 0xFF00) |
@@ -96,8 +94,7 @@ void stackPush(uint32_t elem) {
 uint32_t stackPop() {
 	if (freedStack.top == -1) {
 		return 0xFFFFFFFF;
-	}
-	else {
+	} else {
 		freedStack.top--;
 		return freedStack.stack[freedStack.top + 1];
 	}
@@ -123,25 +120,18 @@ int main(int argc, char *argv[]) {
 	collecSize = ARRAY_BLOCK;
 	sizes[0] = fileSize(argv[1]) / 4;
 
-
 	loadROM(arrays, argv[1], sizes[0]);
-
 	fixEndianess(arrays);
 
-
 	printf("\n == MoebiuZ's UM emulator ==\n\n");
-
 
 	while (1) {
 
 		instruction = arrays[0][PC];
-
 		opcode = instruction >> 28;
-
 
 #if DEBUG > 0
 		char *mnemo[] = { "CMOV", "AIND", "AAM", "ADD", "MUL", "DIV", "NAND", "HALT", "ALLOC", "FREE", "OUT", "IN", "LOAD", "ORT" };
-
 
 		if (opcode <= 13) {
 			A = (instruction << 23) >> 29;
@@ -149,7 +139,6 @@ int main(int argc, char *argv[]) {
 			C = (instruction << 29) >> 29;
 			sA = (instruction >> 25) & 0B111;
 			value = (instruction << 7) >> 7;
-
 
 			printf("\n%08x %s R%d (%08x), R%d (%08x), R%d (%08x) %08x %80x\n", instruction, mnemo[opcode], A, Reg[A], B, Reg[B], C, Reg[C], sA, value);
 		}
@@ -181,7 +170,6 @@ int main(int argc, char *argv[]) {
 				if (Reg[C] < sizes[Reg[B]]) {
 					Reg[A] = arrays[Reg[B]][Reg[C]];
 				}
-
 			}
 
 			PC++;
@@ -251,11 +239,11 @@ int main(int argc, char *argv[]) {
 			B = (instruction >> 3) & 0B111;
 			C = instruction & 0B111;
 
-
 			Reg[A] = (~Reg[B]) | (~Reg[C]);
 
 			PC++;
 			break;
+
 			// HALT
 		case 7:
 
@@ -273,7 +261,6 @@ int main(int argc, char *argv[]) {
 				pop = stackPop();
 
 				if (pop == 0xFFFFFFFF) {
-
 					if (collecUsed == collecSize) {
 						collecSize += ARRAY_BLOCK;
 						arrays = realloc(arrays, collecSize * sizeof(arrays));
@@ -283,25 +270,16 @@ int main(int argc, char *argv[]) {
 					arrays[collecUsed] = calloc(Reg[C], sizeof(arrays));
 					sizes[collecUsed] = Reg[C];
 					Reg[B] = collecUsed;
-
-
-				}
-				else {
-
+				} else {
 					arrays[pop] = calloc(Reg[C], sizeof(arrays));
 					sizes[pop] = Reg[C];
 					Reg[B] = pop;
-
 				}
-
 				collecUsed++;
 			}
 
-
 			PC++;
 			break;
-
-
 
 			// FREE (Abandon array)
 		case 9:
@@ -312,7 +290,6 @@ int main(int argc, char *argv[]) {
 			if (Reg[C] != 0) {
 				if (Reg[C] < collecSize) {
 					if (arrays[Reg[C]] != NULL) {
-
 						free(arrays[Reg[C]]);
 						stackPush(Reg[C]);
 						arrays[Reg[C]] = NULL;
@@ -343,8 +320,7 @@ int main(int argc, char *argv[]) {
 
 			if (input == 13) {
 				Reg[C] = 0xFFFFFFFF;
-			}
-			else {
+			} else {
 				Reg[C] = (uint32_t)input;
 			}
 
@@ -358,28 +334,17 @@ int main(int argc, char *argv[]) {
 			C = instruction & 0B111;
 
 			if (Reg[B] != 0) {
-
 				if (arrays[Reg[B]] != NULL) {
-
 					free(arrays[0]);
 					arrays[0] = malloc(sizes[Reg[B]] * sizeof(arrays));
 					memcpy(arrays[0], arrays[Reg[B]], sizes[Reg[B]] * sizeof(arrays));
 					sizes[0] = sizes[Reg[B]];
-
 					PC = Reg[C];
-
-				}
-				else {
-
+				} else {
 					printf("\nMachine Fail: NULL array\n");
-
 				}
-
-			}
-			else {
-
+			} else {
 				PC = Reg[C];
-
 			}
 
 			break;
@@ -394,6 +359,7 @@ int main(int argc, char *argv[]) {
 
 			PC++;
 			break;
+
 
 		default:
 
