@@ -108,6 +108,11 @@ uint32_t stackPop() {
 
 int main(int argc, char *argv[]) {
 
+	if (argc != 2) {
+		printf("Usage: %s image.umz\n", argv[0]);
+		return 1;
+	}
+
 	arrays = calloc(ARRAY_BLOCK, sizeof(arrays));
 	sizes = calloc(ARRAY_BLOCK, sizeof(sizes));
 
