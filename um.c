@@ -45,7 +45,7 @@ static unsigned fileSize(const char *file) {
 
 
 
-void *loadROM(uint32_t **arrays, const char *file, size_t size) {
+void loadROM(uint32_t **arrays, const char *file, size_t size) {
 
 	FILE *f;
 
